@@ -14,17 +14,6 @@ const generateToken = (userId) => {
 
 const registerUser = async (req, res) => {
   try {
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-// @desc Login user
-// @route POST /api/auth/login
-// @access Public
-
-const loginUser = async (req, res) => {
-  try {
     const { name, email, password, profileImageUrl, adminInviteToken } =
       req.body;
 
@@ -66,6 +55,17 @@ const loginUser = async (req, res) => {
       profileImageUrl: user.profileImageUrl,
       token: generateToken(user._id),
     });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// @desc Login user
+// @route POST /api/auth/login
+// @access Public
+
+const loginUser = async (req, res) => {
+  try {
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
