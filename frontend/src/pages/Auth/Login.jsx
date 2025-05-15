@@ -1,14 +1,19 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { Lock, Mail } from "lucide-react";
 import Input from "../../components/ui/Input/Input";
 import { Link } from "react-router";
 import { isValidEmail } from "../../utils/helper";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATH } from "../../utils/apiPaths";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState({ email: null, password: null });
+  const navigate = useNavigate();
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
@@ -29,8 +34,34 @@ export default function Login() {
     setError(errors);
     if (hasError) return;
 
-    // Simulate success or add actual logic here
-    console.log("Logging in with:", { email, password });
+    // API Calls
+
+    try {
+      const response = await axiosInstance.post(API_PATH.AUTH.LOGIN, {
+        email,
+        password,
+      });
+
+      const { token, role } = response.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+
+        // Redirect based on role
+
+        if (role === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/user/dashboard");
+        }
+      }
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Something Went Wrong. Please Try Again");
+      }
+    }
   };
 
   return (
