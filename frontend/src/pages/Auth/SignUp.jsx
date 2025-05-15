@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import AuthLayout from "../../components/layouts/AuthLayout";
 import { isValidEmail } from "../../utils/helper";
 import Input from "../../components/ui/Input/Input";
 import { Key, Mail, User, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ProfileImageSelector from "../../components/ui/profileImage/ProfileImageSelector";
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATH } from "../../utils/apiPaths";
+import { UserContext } from "../../context/userContext";
+import uploadImage from "../../utils/uploadImage";
 
 export default function SignUp() {
   const [fullName, setFullName] = useState("");
@@ -13,6 +17,9 @@ export default function SignUp() {
   const [profileImage, setProfileImage] = useState(null);
   const [adminInviteToken, setAdminInviteToken] = useState("");
   const [error, setError] = useState({ email: null, password: null });
+  const navigate = useNavigate();
+
+  const { updateUser } = useContext(UserContext);
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -34,6 +41,39 @@ export default function SignUp() {
     if (hasError) return;
 
     // API Calls
+
+    let profileImageUrl = "";
+
+    try {
+      if (profileImage) {
+        const imgUploadRes = await uploadImage(profileImage);
+        profileImageUrl = imgUploadRes?.imageUrl || "";
+      }
+
+      const response = await axiosInstance.post(API_PATH.AUTH.REGISTER, {
+        name: fullName,
+        email,
+        password,
+        profileImageUrl,
+        adminInviteToken,
+      });
+
+      const { token, role } = response.data;
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(response.data);
+
+        // Redirect based on role
+
+        navigate(role === "admin" ? "/admin/dashboard" : "/user/dashboard");
+      }
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Something Went Wrong. Please Try Again");
+      }
+    }
   };
 
   return (
