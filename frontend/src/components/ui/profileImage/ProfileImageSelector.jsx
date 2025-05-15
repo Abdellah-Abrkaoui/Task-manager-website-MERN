@@ -5,7 +5,7 @@ const ProfileImageSelector = ({ image, setImage }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setImage(URL.createObjectURL(file));
+      setImage(file);
     }
   };
 
@@ -21,7 +21,7 @@ const ProfileImageSelector = ({ image, setImage }) => {
         <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-gray-300">
           {image ? (
             <img
-              src={image}
+              src={URL.createObjectURL(image)}
               alt="Profile"
               className="w-full h-full object-cover"
             />
